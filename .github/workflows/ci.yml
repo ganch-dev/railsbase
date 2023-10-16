@@ -46,7 +46,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: docker pull registry.ganch.dev/cryptolator:ci-${{ github.sha }}
+      - run: docker pull ghcr.io/ganch-dev/railsbase:ci-${{ github.sha }}
       - run: docker compose -f docker/ci-compose.yml run rspec
         env:
           APP_IMAGE: ghcr.io/ganch-dev/railsbase:ci-${{ github.sha }}
