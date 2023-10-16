@@ -1,9 +1,12 @@
 AllCops:
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.2.2
   NewCops: enable
   Exclude:
-    - "bin/*"
+    - "node_modules/**/*"
     - "db/schema.rb"
+    - "bin/**/*"
+    # Fixes missing gem exception when running Rubocop on GitHub Actions.
+    - "vendor/bundle/**/*"
 
 # Always use double quotes
 Style/StringLiterals:
