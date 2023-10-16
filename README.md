@@ -1,4 +1,4 @@
-# Base template for Rails Apps
+# Base template for new Rails Apps
 
 Features:
 * Ruby 3.2.2
@@ -7,6 +7,7 @@ Features:
 * Redis
 * Rspec
 * esbuild
+* Github Actions CI
 
 Replace all occurrences of "railsbase" (and "Railsbase") with the app name.
 
