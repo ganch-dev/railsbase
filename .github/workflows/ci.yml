@@ -1,0 +1,111 @@
+name: CI
+on: [push]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  lint:
+    name: Rubocop Linting
+    runs-on: ubuntu-latest
+    env:
+      BUNDLE_WITHOUT: "default test"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          ruby-version: 3.2.2
+      - run: bin/rubocop --parallel --format=progress --format=github
+
+  build:
+    name: CI Image Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          target: ci
+          push: true
+          tags: ghcr.io/ganch-dev/railsbase:ci-${{ github.sha }}
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: docker pull ghcr.io/ganch-dev/railsbase:ci-${{ github.sha }}
+      - run: docker compose -f docker-compose.yml run rspec
+        env:
+          APP_IMAGE: ghcr.io/ganch-dev/railsbase:ci-${{ github.sha }}
+
+  release-please:
+    name: Release Please
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main'
+    needs: [build, test]
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release-please.outputs.release_created }}
+      tag_name: ${{ steps.release-please.outputs.tag_name }} # e.g. v1.0.0
+      version: ${{ steps.release-please.outputs.version }} # e.g. 1.0.0
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        id: release-please
+        with:
+          release-type: ruby
+          package-name: railsbase
+
+  publish-image:
+    name: Publish Image
+    runs-on: ubuntu-latest
+    needs: [build, test, release-please]
+    if: ${{ needs.release-please.outputs.release_created }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          build-args:
+            VERSION=${{ needs.release-please.outputs.version }}
+          push: true
+          tags: |
+            ghcr.io/ganch-dev/railsbase:stable
+            ghcr.io/ganch-dev/railsbase:${{ needs.release-please.outputs.version }}

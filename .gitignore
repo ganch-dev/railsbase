@@ -49,3 +49,5 @@
 
 # Ignore local Docker dirs
 /docker/data
+
+/node_modules

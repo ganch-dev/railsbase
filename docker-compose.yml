@@ -44,6 +44,16 @@ services:
     ports:
       - 8080:8080
 
+  rspec:
+    image: *app-image
+    profiles:
+      - ci
+    depends_on:
+      - mariadb
+    restart: on-failure
+    command: bin/rspec
+    environment: *common-vars
+
   web:
     image: *app-image
     profiles:
