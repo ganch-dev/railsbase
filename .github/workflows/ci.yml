@@ -6,6 +6,18 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  lint:
+    name: Rubocop Linting
+    runs-on: ubuntu-latest
+    env:
+      BUNDLE_WITHOUT: "default test"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - run: bin/rubocop --parallel --format=progress --format=github
+
   build:
     name: CI Image Build
     runs-on: ubuntu-latest
@@ -47,7 +59,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - run: docker pull ghcr.io/ganch-dev/railsbase:ci-${{ github.sha }}
-      - run: docker compose -f docker/ci-compose.yml run rspec
+      - run: docker compose -f docker-compose.yml run rspec
         env:
           APP_IMAGE: ghcr.io/ganch-dev/railsbase:ci-${{ github.sha }}
 
