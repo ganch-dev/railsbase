@@ -75,8 +75,7 @@ Style/IfUnlessModifier:
 # We prefer assignments to happen within the condition rather than setting a
 # variable to the result of a condition.
 Style/ConditionalAssignment:
-  EnforcedStyle: assign_inside_condition
-  IncludeTernaryExpressions: false
+  Enabled: false
 
 # Empty methods should not be compacted onto a single line
 Style/EmptyMethod:
