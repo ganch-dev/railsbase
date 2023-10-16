@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+COMPOSE_FILE="docker-compose.yml"
+PROJECT_NAME="railsbase-services"
+
+if [ "$1" = "start" ]; then
+  docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" up -d
+elif [ "$1" = "stop" ]; then
+  docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" stop
+elif [ "$1" = "rm" ]; then
+  docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" down
+elif [ "$1" = "status" ]; then
+  docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" ps
+else
+  echo "Usage: $0 [start|stop|status|rm]"
+fi
