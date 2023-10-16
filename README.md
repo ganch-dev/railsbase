@@ -6,6 +6,7 @@ Features:
 * MariaDB
 * Redis
 * Rspec
+* esbuild
 
 Replace all occurrences of "railsbase" (and "Railsbase") with the app name.
 
